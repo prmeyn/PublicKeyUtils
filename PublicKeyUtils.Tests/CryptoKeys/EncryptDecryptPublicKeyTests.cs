@@ -1,5 +1,4 @@
 ﻿using PublicKeyUtils.CryptoKeys;
-using System.Security.Cryptography;
 
 namespace PublicKeyUtils.Tests.CryptoKeys
 {
@@ -71,7 +70,7 @@ namespace PublicKeyUtils.Tests.CryptoKeys
 				KeyOps = ["encrypt"]
 			};
 
-			Assert.Throws<CryptographicException>(() => key.Encrypt("Test"));
+			Assert.Throws<NotSupportedException>(() => key.Encrypt("Test"));
 		}
 	}
 }

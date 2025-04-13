@@ -25,7 +25,7 @@ The library is available as a NuGet package. You can install it using the follow
 
 ```bash
 dotnet add package PublicKeyUtils
-
+```
 
 Alternatively, visit the [NuGet package page](https://www.nuget.org/packages/PublicKeyUtils) for more details.
 

@@ -6,6 +6,18 @@
     <Nullable>enable</Nullable>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>PublicKeyUtils</PackageId>
+    <Authors>prmeyn</Authors>
+    <Company>prmeyn</Company>
+    <Description>A .NET class library for simplifying RSA and ECC public key cryptography operations with JSON serialization support.</Description>
+    <PackageTags>cryptography;rsa;ecc;encryption;signature;public-key;security;json;jwk</PackageTags>
+    <RepositoryUrl>https://github.com/prmeyn/PublicKeyUtils</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/prmeyn/PublicKeyUtils</PackageProjectUrl>
+    <Copyright>Copyright © 2025 prmeyn</Copyright>
+    <PackageReleaseNotes>https://github.com/prmeyn/PublicKeyUtils/releases</PackageReleaseNotes>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="../LICENSE" Pack="true" PackagePath="\" />

@@ -49,6 +49,9 @@ namespace PublicKeyUtils.CryptoKeys
 		{
 			if (IsEncryptionAllowed)
 			{
+				// Validate algorithm first (throws NotSupportedException if unsupported)
+				var padding = RSAEncryptionPadding;
+				
 				RSA rsa = RSA.Create();
 				// Extract key components
 				rsa.ImportParameters(new()
@@ -57,7 +60,7 @@ namespace PublicKeyUtils.CryptoKeys
 					Exponent = Exponent
 				});
 				byte[] messageBytes = Encoding.UTF8.GetBytes(plainText);
-				return rsa.Encrypt(messageBytes, RSAEncryptionPadding);
+				return rsa.Encrypt(messageBytes, padding);
 			}
 			return [];
 		}

@@ -11,6 +11,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # required: lets the job mint the OIDC token that nuget.org trades for a short-lived API key
     steps:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,7 +35,13 @@ jobs:
       run: dotnet test --configuration Release --no-build --verbosity normal
     - name: Pack
       run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
+    # Kept immediately before the push: the issued key is only valid for 1 hour
+    - name: NuGet login (OIDC -> short-lived API key)
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
     - name: Push
       run: dotnet nuget push PublicKeyUtils.${VERSION}.nupkg --api-key ${NUGET_API_KEY} --source https://api.nuget.org/v3/index.json
       env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}

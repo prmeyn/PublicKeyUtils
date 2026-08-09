@@ -7,26 +7,33 @@ namespace PublicKeyUtils.CryptoKeys
 	public sealed class EncryptDecryptPublicKey
 	{
 		[JsonPropertyName("alg")]
-		public string Algorithm { get; set; }
+		public string? Algorithm { get; set; }
 
 		[JsonPropertyName("e")]
-		public string E { get; set; }
+		public string? E { get; set; }
 
 		[JsonPropertyName("ext")]
 		public bool Ext { get; set; }
 
 		[JsonPropertyName("key_ops")]
-		public string[] KeyOps { get; set; }
+		public string[]? KeyOps { get; set; }
 
 		[JsonPropertyName("kty")]
-		public string Kty { get; set; }
+		public string? Kty { get; set; }
 
 		[JsonPropertyName("n")]
-		public string N { get; set; }
+		public string? N { get; set; }
 
-		public byte[] Modulus => Convert.FromBase64String(ToBase64Standard(N));
-		public byte[] Exponent => Convert.FromBase64String(ToBase64Standard(E));
-		private static string ToBase64Standard(string base64) => base64.Replace('-', '+').Replace('_', '/').PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
+		public byte[] Modulus => Convert.FromBase64String(ToBase64Standard(N, "n"));
+		public byte[] Exponent => Convert.FromBase64String(ToBase64Standard(E, "e"));
+		private static string ToBase64Standard(string? base64, string member)
+		{
+			if (string.IsNullOrEmpty(base64))
+			{
+				throw new InvalidOperationException($"The '{member}' value is missing.");
+			}
+			return base64.Replace('-', '+').Replace('_', '/').PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
+		}
 
 		public RSAEncryptionPadding RSAEncryptionPadding
 		{
@@ -43,7 +50,7 @@ namespace PublicKeyUtils.CryptoKeys
 			}
 		}
 
-		public bool IsEncryptionAllowed => KeyOps.Contains("encrypt");
+		public bool IsEncryptionAllowed => KeyOps?.Contains("encrypt") == true;
 
 		public byte[] Encrypt(string plainText)
 		{
@@ -52,7 +59,7 @@ namespace PublicKeyUtils.CryptoKeys
 				// Validate algorithm first (throws NotSupportedException if unsupported)
 				var padding = RSAEncryptionPadding;
 				
-				RSA rsa = RSA.Create();
+				using RSA rsa = RSA.Create();
 				// Extract key components
 				rsa.ImportParameters(new()
 				{

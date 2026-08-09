@@ -7,22 +7,22 @@ namespace PublicKeyUtils.CryptoKeys
 	public sealed class SignVerifyPublicKey
 	{
 		[JsonPropertyName("x")]
-		public string X { get; set; }
+		public string? X { get; set; }
 
 		[JsonPropertyName("y")]
-		public string Y { get; set; }
+		public string? Y { get; set; }
 
 		[JsonPropertyName("crv")]
-		public string Crv { get; set; }
+		public string? Crv { get; set; }
 
 		[JsonPropertyName("ext")]
 		public bool Ext { get; set; }
 
 		[JsonPropertyName("key_ops")]
-		public string[] KeyOps { get; set; }
+		public string[]? KeyOps { get; set; }
 
 		[JsonPropertyName("kty")]
-		public string Kty { get; set; }
+		public string? Kty { get; set; }
 
 
 
@@ -60,13 +60,19 @@ namespace PublicKeyUtils.CryptoKeys
 			}
 			else
 			{
-				if (!namedCurves.TryGetValue(Crv, out ECCurve eCCurve))
+				if (Crv == null || !namedCurves.TryGetValue(Crv, out ECCurve eCCurve))
 				{
 					Console.WriteLine($"Invalid NamedCurve {Crv}");
 					return false;
 				}
 				else
 				{
+
+					if (X == null || Y == null)
+					{
+						Console.WriteLine("Missing x or y coordinate.");
+						return false;
+					}
 
 					var signatureBytes = Convert.FromBase64String(signatureAsBase64);
 					// Convert Base64URL-encoded x and y values to standard Base64

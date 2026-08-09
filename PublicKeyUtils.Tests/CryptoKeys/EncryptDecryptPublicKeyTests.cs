@@ -60,6 +60,21 @@ namespace PublicKeyUtils.Tests.CryptoKeys
 		}
 
 		[Fact]
+		public void Encrypt_ShouldReturnEmpty_WhenKeyOpsMissing()
+		{
+			var key = new EncryptDecryptPublicKey
+			{
+				Algorithm = "RSA-OAEP",
+				E = "AQAB",
+				N = "sXch9W6_K8oZn3PfJPZepKvXYTwc_nPIu9JrYfPRzM8zqVnD3edGldHTebAiN4MbcDkN5q1nbRV69BQ1_lwPt6b92_l6dcH0QJebQqovExY16Y7bQO02NGqjc8tkFPAeqC1cgI2VmojzG3FeAWqxtj5Ez5g0PYYJgxIoEXRopv9N2V-DME4mXwMxf3NVZ9d73Sm1Tb9p_U1OwQuWCh0p4kJHDsh44yBdM37KMLWSLM6pEr7jeWyzX0d1sKdfbORaVq0f1uzjZ_3iM_Oey7GMJKkPGYQlQjWbL2iyHv5PeAxJmZLykB0CZ0oUzOGlYfKJhL1x_j1D_zFckvj7o0K9GQ",
+				KeyOps = null // e.g. a JWK deserialised without "key_ops"
+			};
+
+			var result = key.Encrypt("Secret message");
+			Assert.Empty(result);
+		}
+
+		[Fact]
 		public void Encrypt_ShouldThrow_OnUnsupportedAlgorithm()
 		{
 			var key = new EncryptDecryptPublicKey

@@ -12,6 +12,8 @@ namespace PublicKeyUtils.Tests.CryptoKeys
 			// Arrange: Generate a test EC key and message/signature
 			using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
 			var parameters = ecdsa.ExportParameters(false);
+			Assert.NotNull(parameters.Q.X);
+			Assert.NotNull(parameters.Q.Y);
 
 			string message = "Hello ECDSA!";
 			byte[] messageBytes = Encoding.UTF8.GetBytes(message);

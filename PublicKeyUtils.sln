@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12023.21 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicKeyUtils", "PublicKeyUtils\PublicKeyUtils.csproj", "{E69A5285-9F35-462E-8BD7-D7865CAECBD9}"
 EndProject
@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFiles", "{1C5441F0-E2A1-45FF-9C43-AE7475325BF5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CLAUDE.md = CLAUDE.md
 		LICENSE = LICENSE
 		README.md = README.md
 		.github\workflows\release.yml = .github\workflows\release.yml

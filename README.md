@@ -14,6 +14,8 @@ PublicKeyUtils is an open-source .NET class library designed to simplify working
 - [Usage Examples](#usage-examples)
   - [RSA Encryption](#rsa-encryption)
   - [ECC Signature Verification](#ecc-signature-verification)
+  - [Loading Keys from JWK JSON](#loading-keys-from-jwk-json)
+  - [Behaviour on Invalid Input](#behaviour-on-invalid-input)
 - [Supported Algorithms](#supported-algorithms)
 - [Contributing](#contributing)
 - [CI/CD](#cicd)
@@ -36,7 +38,7 @@ PublicKeyUtils is an open-source .NET class library designed to simplify working
   - Compatible with JWK (JSON Web Key) format
 
 - **Unit Tests**:
-  - Comprehensive test coverage using xUnit to ensure correctness and reliability
+  - Comprehensive test coverage using xUnit.net v3 (on Microsoft Testing Platform) to ensure correctness and reliability
   - All cryptographic operations thoroughly tested
 
 ## Installation
@@ -101,27 +103,63 @@ using PublicKeyUtils.CryptoKeys;
 // Create an ECC public key for signature verification
 var publicKey = new SignVerifyPublicKey
 {
-    Algorithm = "ES256",  // ECDSA with SHA-256
-    Curve = "P-256",      // Named curve
+    Kty = "EC",       // Key type — must be "EC"
+    Crv = "P-256",    // Named curve
     X = "WKn-ZIGevcwGIyyrzFoZNBdaq9_TsqzGl96oc0CWuis",  // X coordinate (Base64URL)
     Y = "y77t-RvAHRKTsSGdIYUfweuOvwrvDD-Q3Hv5J0fSKbE",  // Y coordinate (Base64URL)
     KeyOps = new[] { "verify" }  // Allowed operations
 };
 
-// Data and signature to verify
-string data = "Important message";
-byte[] signature = Convert.FromBase64String("MEUCIQDKZokqnCjrRtw0...");
+// The message is hashed as UTF-8 bytes; the signature is standard Base64
+string message = "Important message";
+string signature = "MEUCIQDKZokqnCjrRtw0...";
 
-// Verify the signature
-bool isValid = publicKey.Verify(data, signature);
+// Verify the signature — the first argument is the hash algorithm name
+bool isValid = publicKey.Verify("SHA-256", message, signature);
 
 Console.WriteLine($"Signature valid: {isValid}");
 ```
 
-**Supported ECC Algorithms:**
-- `ES256` - ECDSA with SHA-256
-- `ES384` - ECDSA with SHA-384
-- `ES512` - ECDSA with SHA-512
+**Hash algorithm names accepted by `Verify`:** `SHA-1`, `SHA-256`, `SHA-384`, `SHA-512`.
+
+### Loading Keys from JWK JSON
+
+Both key types are plain `System.Text.Json` deserialization targets, so a JWK can be used directly:
+
+```csharp
+using System.Text.Json;
+using PublicKeyUtils.CryptoKeys;
+
+string jwk = """
+{
+  "kty": "EC",
+  "crv": "P-256",
+  "ext": true,
+  "key_ops": ["verify"],
+  "x": "WKn-ZIGevcwGIyyrzFoZNBdaq9_TsqzGl96oc0CWuis",
+  "y": "y77t-RvAHRKTsSGdIYUfweuOvwrvDD-Q3Hv5J0fSKbE"
+}
+""";
+
+var publicKey = JsonSerializer.Deserialize<SignVerifyPublicKey>(jwk)!;
+bool isValid = publicKey.Verify("SHA-256", "Important message", signature);
+```
+
+This is the intended way to consume keys exported by other platforms, such as the Web Crypto API's
+`crypto.subtle.exportKey("jwk", ...)`.
+
+### Behaviour on Invalid Input
+
+The two key types report problems differently, so check the right thing:
+
+| Situation | Result |
+|-----------|--------|
+| `key_ops` missing, or does not permit the operation | `Verify` returns `false`; `Encrypt` returns an empty array |
+| `kty` is not `"EC"`, unknown curve, unknown hash name, or missing `x`/`y` | `Verify` returns `false` |
+| `alg` is not a supported RSA-OAEP variant | `Encrypt` throws `NotSupportedException` |
+| `n` or `e` missing when reading `Modulus` / `Exponent` | throws `InvalidOperationException` |
+
+All properties are nullable, since a JWK may legitimately omit optional members.
 
 ## Supported Algorithms
 
@@ -141,10 +179,11 @@ Console.WriteLine($"Signature valid: {isValid}");
 | `P-521` | 521-bit | NIST P-521 (secp521r1) |
 
 ### Hash Algorithms
-- SHA-1 (legacy support)
-- SHA-256 (recommended)
-- SHA-384
-- SHA-512
+Passed to `Verify` as the first argument, using these exact names:
+- `SHA-1` (legacy support)
+- `SHA-256` (recommended)
+- `SHA-384`
+- `SHA-512`
 
 ## Contributing
 
@@ -159,12 +198,26 @@ Please ensure all tests pass before submitting a pull request:
 dotnet test
 ```
 
+The test suite runs on xUnit.net v3 under Microsoft Testing Platform. To run a single test, use the
+test project's own runner — `dotnet test --filter` is ignored under this platform:
+
+```bash
+dotnet run --project PublicKeyUtils.Tests -- --filter-method "*.Encrypt_ShouldThrow_OnUnsupportedAlgorithm"
+dotnet run --project PublicKeyUtils.Tests -- --filter-class "*.SignVerifyPublicKeyTests"
+```
+
 ## CI/CD
 
 This project uses GitHub Actions for continuous integration and deployment. On every push to a version tag (e.g., `v2.0.0`), the library is automatically:
 - Built and tested
 - Packaged as a NuGet package
 - Published to [NuGet.org](https://www.nuget.org/packages/PublicKeyUtils)
+
+The package version is taken from the tag name, so it is not stored anywhere in the repository. The
+workflow also verifies that the tagged commit is contained in `origin/main` before publishing, so
+release tags must be created from `main`. Publishing uses
+[NuGet trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+(OIDC), so no long-lived API key is stored in the repository.
 
 See the [release workflow](.github/workflows/release.yml) for more details.
 

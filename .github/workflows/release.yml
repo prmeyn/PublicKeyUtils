@@ -40,7 +40,7 @@ jobs:
       uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
       id: login
       with:
-        user: ${{ secrets.NUGET_USER }}
+        user: globalpay # the nuget.org account that owns the package and its trusted-publishing policy — public, not a secret
     - name: Push
       run: dotnet nuget push PublicKeyUtils.${VERSION}.nupkg --api-key ${NUGET_API_KEY} --source https://api.nuget.org/v3/index.json
       env:

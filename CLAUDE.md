@@ -92,8 +92,11 @@ Releases are **tag-driven**; the version lives nowhere in the repo.
   --contains | grep origin/main`). Tag from main.
 - Publishing uses **NuGet trusted publishing (OIDC)**, not a stored API key: the job needs
   `permissions: id-token: write`, and `NuGet/login` exchanges the token for a 1-hour key immediately
-  before the push. The `user:` input comes from the `NUGET_USER` repo secret. The package is owned on
-  nuget.org by the `globalpay` account, not `prmeyn`.
+  before the push. **No repo secret is involved.** The `user:` input is hardcoded to `globalpay` — the
+  nuget.org account that owns the package (not `prmeyn`) and holds its trusted-publishing policy. That
+  account name is public, so it's inline on purpose: it was a `NUGET_USER` secret once, and an unset
+  secret expands to the empty string rather than failing, which broke a release with the opaque
+  `Input required and not supplied: user`. Don't reintroduce the indirection.
 - **Actions are pinned to commit SHAs** with a trailing `# vX.Y.Z` comment. Preserve this when touching
   the workflow.
 
